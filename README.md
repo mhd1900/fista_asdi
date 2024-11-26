@@ -1,5 +1,5 @@
-# fista_asdi: ESANN 24-25
-by Nicolas Mil-Homens Cavaco
+# fista_asdi: 
+by Nicolas Mil-Homens Cavaco (ESANN 24-25)
 
 ## Dependencies: 
 - torch (2.2.2)
