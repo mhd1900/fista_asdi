@@ -1,3 +1,6 @@
+"""
+Modified version of EvalRoc from VIP and roc_updated_vip_roc from https://github.com/hazandaglayan/likelihoodratiomap
+"""
 #__author__ = "Modified by Nicolas Mil-Homens Cavaco"
 #__all__ = 'EvalRoc'
 
