@@ -4,10 +4,7 @@ Modified version of EvalRoc from VIP and roc_updated_vip_roc from https://github
 #__author__ = "Modified by Nicolas Mil-Homens Cavaco"
 #__all__ = 'EvalRoc'
 
-"""
-ROC curves generation.
-"""
-
+import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from hciplot import plot_frames
@@ -298,8 +295,7 @@ class EvalRoc(object):
 
             m.fluxes = np.array(m.fluxes)  
             m.frames = np.array(m.frames)
-            m.probmaps = np.array(m.probmaps)     
-
+            m.probmaps = np.array(m.probmaps)      
 
     def compute_tpr_fpr_sqrt(self, debug=False, rin=3, rout=14, **kwargs):
         """
@@ -642,6 +638,132 @@ class EvalRoc(object):
             raise ValueError("`plot_type` unknown")
 
 
+    def plot_roc_curves(self, dpi=100, figsize=(5, 5), xmin=None, xmax=None,
+                        ymin=-0.05, ymax=1.02, xlog=True, label_skip_one=False,
+                        legend_loc='lower right', legend_size=6,
+                        show_data_labels=True, hide_overlap_label=True,
+                        label_gap=(0, -0.028), save_plot=False, label_params={},
+                        line_params={}, marker_params={}, verbose=True):
+        # """
+        # Parameters
+        # ----------
+
+
+        # Returns
+        # -------
+        # None, but modifies `methods`: adds .tpr and .mean_fps attributes
+
+        # Notes
+        # -----
+        # # TODO: load `roc_injections` and `roc_tprfps` from file (`load_res`)
+        # # TODO: print flux distro information (is it actually stored in inj?
+        # What to do with functions, do they pickle?)
+        # # TODO: hardcoded `methodconf`?
+
+        # """
+        labelskw = dict(alpha=1, fontsize=5.5, weight="bold", rotation=0,
+                        annotation_clip=True)
+        linekw = dict(alpha=0.2)
+        markerkw = dict(alpha=0.5, ms=3)
+        labelskw.update(label_params)
+        linekw.update(line_params)
+        markerkw.update(marker_params)
+        n_thresholds = len(self.methods[0].thresholds)
+
+        if verbose:
+            print('{} injections'.format(self.n_injections))
+            # print('Flux distro : {} [{}:{}]'.format(roc_injections.flux_distribution,
+            # roc_injections.fluxp1, roc_injections.fluxp2))
+            print('Annulus from {} to {} pixels'.format(self.inrad,
+                                                        self.outrad))
+
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = fig.add_subplot(111)
+
+        if not isinstance(label_skip_one, (list, tuple)):
+            label_skip_one = [label_skip_one]*len(self.methods)
+        labels = []
+
+        # methodconf = {"CADI": dict(color="#d62728", symbol="^"),
+        #              "PCA": dict(color="#ff7f0e", symbol="X"),
+        #              "LLSG": dict(color="#2ca02c", symbol="P"),
+        #              "SODIRF": dict(color="#9467bd", symbol="s"),
+        #              "SODINN": dict(color="#1f77b4", symbol="p"),
+        #              "SODINN-pw": dict(color="#1f77b4", symbol="p")
+        #             }  # maps m.name to plot style
+
+        for i, m in enumerate(self.methods):
+
+            if not hasattr(m, "detections") or not hasattr(m, "fps"):
+                raise AttributeError("method #{} has no detections/fps. Run"
+                                     "`compute_tpr_fps` first.".format(i))
+
+            m.tpr = np.zeros((n_thresholds))
+            m.mean_fps = np.zeros((n_thresholds))
+
+            for j in range(n_thresholds):
+                m.tpr[j] = np.asarray(m.detections)[:, j].tolist().count(1) / \
+                           self.n_injections
+                m.mean_fps[j] = np.asarray(m.fps)[:, j].mean() #.sum() / np.asarray(m.false)[:, j].sum() #.mean()
+
+            plt.plot(m.mean_fps, m.tpr, '--', color=m.color, **linekw)
+            plt.plot(m.mean_fps, m.tpr, m.symbol, label=m.name, color=m.color,
+                     **markerkw)
+
+            if show_data_labels:
+                if label_skip_one[i]:
+                    lab_x = m.mean_fps[1::2]
+                    lab_y = m.tpr[1::2]
+                    thr = m.thresholds[1::2]
+                else:
+                    lab_x = m.mean_fps
+                    lab_y = m.tpr
+                    thr = m.thresholds
+
+                for i, xy in enumerate(zip(lab_x + label_gap[0],
+                                           lab_y + label_gap[1])):
+                    labels.append(ax.annotate('{:.2f}'.format(thr[i]),
+                                  xy=xy, xycoords='data', color=m.color,
+                                              **labelskw))
+                    # TODO: reverse order of `self.methods` for better annot.
+                    # z-index?
+
+        plt.legend(loc=legend_loc, prop={'size': legend_size})
+        if xlog:
+            ax.set_xscale("symlog")
+        plt.ylim(ymin=ymin, ymax=ymax)
+        plt.xlim(xmin=xmin, xmax=xmax)
+        plt.ylabel('TPR')
+        plt.xlabel('Full-frame mean FPs')
+        plt.grid(alpha=0.4)
+
+        if show_data_labels:
+            mask = np.zeros(fig.canvas.get_width_height(), bool)
+
+            fig.canvas.draw()
+
+            for label in labels:
+                bbox = label.get_window_extent()
+                negpad = -2
+                x0 = int(bbox.x0) + negpad
+                x1 = int(np.ceil(bbox.x1)) + negpad
+                y0 = int(bbox.y0) + negpad
+                y1 = int(np.ceil(bbox.y1)) + negpad
+
+                s = np.s_[x0:x1, y0:y1]
+                if np.any(mask[s]):
+                    if hide_overlap_label:
+                        label.set_visible(False)
+                else:
+                    mask[s] = True
+
+        if save_plot:
+            if isinstance(save_plot, str):
+                plt.savefig(save_plot, dpi=dpi, bbox_inches='tight')
+            else:
+                plt.savefig('roc_curve.pdf', dpi=dpi, bbox_inches='tight')
+
+
 def compute_binary_map(frame, thresholds, injections, fwhm, npix=1,
                        overlap_threshold=0.7, max_blob_fact=2, plot=False,
                        debug=False):
@@ -856,19 +978,3 @@ def _create_synt_cube(cube, psf, ang, plsc, dist, flux, theta=None,
                                     rad_dists=[dist], n_branches=1, theta=theta,
                                     verbose=verbose)
     return cubefc, posx, posy
-
-    #fig, ax = fig.subplots()
-
-    
-    #if sqrt:
-    #    plt.plot(np.sqrt((total_fprl2l1/25).T),np.sqrt(total_tprl2l1.T), '-', label=label, markersize=5)#, marker=next(marker)), color=cmap(vers-1))
-    #    plt.ylabel(r'$\sqrt{\rm TPR}$')
-    #    plt.xlabel(r'$\sqrt{\rm FPR}$')
-    #else:
-    #    plt.plot((total_fprl2l1/25).T,np.sqrt(total_tprl2l1.T), '-o',label=label, markersize=10)#, marker=next(marker))#, color=cmap(vers-1))
-    #    plt.xlabel('FPR')
-    #    plt.xlabel('TPR')
-        
-        
-    #plt.legend()
-    #return total_tpr, total_fpr
