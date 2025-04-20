@@ -8,11 +8,5 @@ by Nicolas Mil-Homens Cavaco (ESANN 24-25)
 - hciplot
 
 ## Cite: 
-> @inproceedings{inproceedings,
-> author = {Cavaco, Nicolas and Jacques, Laurent and Absil, Pierre-Antoine},
-> year = {2025},
-> month = {01},
-> pages = {135-140},
-> title = {Exoplanet detection in angular and spectral differential imaging with an accelerated proximal gradient algorithm},
-> doi = {10.14428/esann/2025.ES2025-103}
-> }
+Please cite 
+> Cavaco, Nicolas & Jacques, Laurent & Absil, Pierre-Antoine. (2025). Exoplanet detection in angular and spectral differential imaging with an accelerated proximal gradient algorithm. 135-140. 10.14428/esann/2025.ES2025-103. 
