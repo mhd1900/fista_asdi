@@ -71,12 +71,12 @@ def create_roc_object(datacube, n_injections, algo_name="pca",
                     tol=eps, MAX_ITER=max_iter, fast_gradient=True, output_folder=output_folder) 
          
         roc.add_algo(name='fista', algo=algo, color="#ff0000", symbol="o", thresholds=np.array(np.arange(0,0.5,0.005)), 
-                        folder=output_folder, label="S map", detection_map="detection_map") # [:-1]+'_v2' ### +algo_params[0]+algo_params[1]+"/" [:-1]+'_v2/' [:-1]+"_v2/"
+                        folder=output_folder, label="S map", detection_map="detection_map") 
             
     elif algo_name == 'pca':
         algo = PCA(datacube, params=int(algo_params[0]), stepsize=1.0, verbose=4, device='cpu', output_folder=output_folder) 
         roc.add_algo(name='pca', algo=algo, color="#000000", symbol="x", thresholds=np.array(np.arange(0,8.0,0.1)), 
-                    folder=output_folder, label="PCA S/N", detection_map="detection_map") # +algo_params[0]+algo_params[1]+"/" output_folder[:-9]+'pca_16_v2/'
+                    folder=output_folder, label="PCA S/N", detection_map="detection_map") 
    
     roc.read_data(flux[0], estimated_flux=False)
     return roc
@@ -99,7 +99,7 @@ dataset = import_data(cube_id=args.cube_id,
 
 fluxes = (0.0, 0.25, 0.5)
 roc = [None]*len(fluxes)
-for i, f in enumerate(fluxes): # 0, 0.25, 0.5,  1,) 0, 0.25, 
+for i, f in enumerate(fluxes): 
      roc[i] = create_roc_object(dataset, args.n_injections, args.algo_name, 
                                 algo_params=args.algo_params, 
                                 output_folder=args.output_folder,
