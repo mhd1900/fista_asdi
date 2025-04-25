@@ -7,7 +7,7 @@ import os
 import numpy as np
 import argparse
 
-parser = argparse.ArgumentParser(description="TFE-main")
+parser = argparse.ArgumentParser(description="inject_postprocess")
 parser.add_argument("output_folder", type=str)
 parser.add_argument("n_injections", help='n_injections', type=int)
 parser.add_argument("algo_name", help="name of the algorithm", type=str)
