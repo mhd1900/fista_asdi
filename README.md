@@ -1,3 +1,6 @@
+## Content:
+Code for "Exoplanet detection in angular and spectral differential imaging with an accelerated proximal gradient algorithm".
+
 ## Dependencies: 
 - torch (2.2.2)
 - numpy (1.24.1)
