@@ -9,7 +9,7 @@ from fista_asdi.roc import EvalRoc
 import numpy as np
 import argparse
 
-parser = argparse.ArgumentParser(description="TFE-main")
+parser = argparse.ArgumentParser(description="inject_postprocess")
 
 parser.add_argument("output_folder", type=str)
 parser.add_argument("n_injections", help='n_injections', type=int)
@@ -18,9 +18,9 @@ parser.add_argument("algo_params", type=str)
 parser.add_argument("adi_sampling_frame_nb", type=str)
 parser.add_argument("sdi_sampling_frame_nb", type=str)
 parser.add_argument("crop_frames_nb", type=int)
-parser.add_argument("dist", type=str)
-parser.add_argument("flux", type=str)
-parser.add_argument("seed", type=int)
+parser.add_argument("dist", type=str) # 
+parser.add_argument("flux", type=str) # Flux intesity
+parser.add_argument("seed", type=int) # annulus idx for injection, from 1 to 3.
 parser.add_argument("mask_r", type=str)
 parser.add_argument("cube_folder", type=str)
 parser.add_argument("cube_id", type=str)
